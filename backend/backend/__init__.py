@@ -39,12 +39,12 @@ def create_app(test_config=None):
             {
                 "id": uuid.uuid4().hex,
                 "title": "event 1",
-                "date": "2019-04-01",
+                "start": "2024-12-29",
             },
             {
                 "id": uuid.uuid4().hex,
                 "title": "event 2",
-                "date": "2019-04-02",
+                "start": "2024-12-30",
             },
         ]
     )
@@ -54,7 +54,7 @@ def create_app(test_config=None):
         response_object = {"status": "success"}
         if request.method == "POST":
             post_data = request.get_json()
-            event_mapper.insert(post_data.get("title"), post_data.get("date"))
+            event_mapper.insert(post_data.get("title"), post_data.get("start"))
             response_object["message"] = "Event added"
         else:
             response_object["events"] = event_mapper.get_all_events()
@@ -65,7 +65,9 @@ def create_app(test_config=None):
         response_object = {"status": "success"}
         if request.method == "PUT":
             post_data = request.get_json()
-            event_mapper.update(event_id, post_data.get("title"), post_data.get("date"))
+            event_mapper.update(
+                event_id, post_data.get("title"), post_data.get("start")
+            )
             response_object["message"] = "Event updated"
         elif request.method == "DELETE":
             event_mapper.delete(event_id)

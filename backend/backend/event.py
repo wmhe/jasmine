@@ -41,7 +41,7 @@ class EventMapper:
             {
                 "id": uuid.uuid4().hex,
                 "title": title,
-                "author": date,
+                "start": date,
             }
         )
 
@@ -56,7 +56,7 @@ class EventMapper:
         for event in self._cache:
             if event["id"] == event_id:
                 event["title"] = title
-                event["date"] = date
+                event["start"] = date
             break
 
     def delete(self, event_id: str) -> None:

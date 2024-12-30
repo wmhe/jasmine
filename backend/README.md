@@ -1,3 +1,3 @@
 ```bash
-run flask --app backend run
+poetry run flask --app backend run --port 5001 --debug
 ```

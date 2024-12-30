@@ -1,22 +1,21 @@
+<template>
+  <Calendar />
+</template>
+
 <script>
-import FullCalendar from '@fullcalendar/vue3'
-import dayGridPlugin from '@fullcalendar/daygrid'
-import interactionPlugin from '@fullcalendar/interaction'
+import Calendar from "../components/Calendar.vue";
 
 export default {
-  components: {
-    FullCalendar // make the <FullCalendar> tag available
-  },
+  created() {},
   data() {
-    return {
-      calendarOptions: {
-        plugins: [ dayGridPlugin, interactionPlugin ],
-        initialView: 'dayGridMonth'
-      }
-    }
+    return {};
+  },
+  props: {},
+  methods: {},
+  components: {
+    Calendar
   }
-}
+};
 </script>
-<template>
-  <FullCalendar :options="calendarOptions" />
-</template>
+
+<style scoped></style>
