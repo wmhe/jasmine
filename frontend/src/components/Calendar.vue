@@ -2,13 +2,17 @@
   <div class="container-fluid h-100 p-0">
     <div class="row h-100">
       <div class="d-flex h-100">
-        <FullCalendar ref="fullCalendar" :options="calendarOptions" />
+        <FullCalendar
+          ref="fullCalendar"
+          :options="calendarOptions"
+          @pointerdown="pointerdownTimestamp = Date.now()"
+        ></FullCalendar>
       </div>
     </div>
   </div>
   <div>
     <CalendarModal
-      :initial-form-data="getInitialFormData"
+      :initial-form-data="calculateFormData"
       v-if="isModalOpen"
       @close="isModalOpen = false"
       @submit="submitForm"
@@ -65,6 +69,8 @@ export default {
       touchstartX: 0,
       touchendX: 0,
       isModalOpen: false,
+      pointerdownTimestamp: null,
+      formData: null,
     };
   },
   mounted() {
@@ -98,11 +104,16 @@ export default {
         calendarApi.prev();
       }
     },
-    openModal() {
+    handleNewEvent() {
+      this.formData = this.calculateFormDataNow();
       this.isModalOpen = true;
     },
-    handleDateClick(arg) {
-      console.log("date click! " + arg.dateStr);
+    handleDateClick(info) {
+      const offset = Date.now() - this.pointerdownTimestamp;
+      if (offset > 1000) {
+        this.formData = this.calculateFormDataForDate(info.date);
+        this.isModalOpen = true;
+      }
     },
     submitForm(data) {
       const path = "http://localhost:5001/api/v1/events";
@@ -116,13 +127,7 @@ export default {
           console.error(error);
         });
     },
-  },
-  components: {
-    FullCalendar,
-    CalendarModal,
-  },
-  computed: {
-    getInitialFormData() {
+    calculateFormDataNow() {
       const nextHour = new Date();
       nextHour.setHours(nextHour.getHours() + 1, 0, 0, 0);
       const nextNextHour = new Date();
@@ -132,6 +137,25 @@ export default {
         start: nextHour.getTime(),
         end: nextNextHour.getTime(),
       };
+    },
+    calculateFormDataForDate(date) {
+      return {
+        allDay: true,
+        start: date.getTime(),
+        end: date.getTime(),
+      };
+    },
+  },
+  components: {
+    FullCalendar,
+    CalendarModal,
+  },
+  computed: {
+    calculateFormData() {
+      if (!this.formData) {
+        return this.calculateFormDataNow();
+      }
+      return this.formData;
     },
   },
 };
