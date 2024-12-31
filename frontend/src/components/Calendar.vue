@@ -1,13 +1,14 @@
 <template>
   <div class="container-fluid h-100 p-0">
     <div class="row h-100">
-      <div class="d-flex col-sm-12 h-100">
+      <div class="d-flex h-100">
         <FullCalendar ref="fullCalendar" :options="calendarOptions" />
       </div>
     </div>
   </div>
   <div>
     <CalendarModal
+      :initial-form-data="getInitialFormData"
       v-if="isModalOpen"
       @close="isModalOpen = false"
       @submit="submitForm"
@@ -105,12 +106,11 @@ export default {
     },
     submitForm(data) {
       const path = "http://localhost:5001/api/v1/events";
-      console.log(data);
       axios
         .post(path, data)
         .then(() => {
           this.getEvents();
-          this.isModalOpen = false
+          this.isModalOpen = false;
         })
         .catch((error) => {
           console.error(error);
@@ -120,6 +120,19 @@ export default {
   components: {
     FullCalendar,
     CalendarModal,
+  },
+  computed: {
+    getInitialFormData() {
+      const nextHour = new Date();
+      nextHour.setHours(nextHour.getHours() + 1, 0, 0, 0);
+      const nextNextHour = new Date();
+      nextNextHour.setHours(nextNextHour.getHours() + 2, 0, 0, 0);
+      return {
+        allDay: false,
+        start: nextHour.getTime(),
+        end: nextNextHour.getTime(),
+      };
+    },
   },
 };
 </script>

@@ -3,7 +3,11 @@
     <BaseModal @close="closeModal" @action="toggleSubmit">
       <template #title> New Event </template>
       <template #content>
-        <CalendarForm :toggleSubmit="submitValue" @submit="submitForm"></CalendarForm>
+        <CalendarForm
+          :toggleSubmit="submitValue"
+          :initial-form-data="initialFormData"
+          @submit="submitForm"
+        ></CalendarForm>
       </template>
     </BaseModal>
   </div>
@@ -20,7 +24,9 @@ export default {
       submitValue: false,
     };
   },
-  props: {},
+  props: {
+    initialFormData: Object,
+  },
   methods: {
     closeModal() {
       this.$emit("close");
