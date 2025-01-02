@@ -9,7 +9,15 @@ readme = "README.md"
 python = "^3.11"
 flask = "3.1.0"
 flask-cors = "3.0.10"
+flask-sqlalchemy = "^3.1.1"
+flask-migrate = "^4.0.7"
+python-dotenv = "^1.0.1"
+mysqlclient = "^2.2.6"
+flask-mail = "^0.10.0"
+flask-httpauth = "^4.8.0"
 
+[tool.poetry.group.dev.dependencies]
+aiosmtpd = "^1.4.6"
 
 [build-system]
 requires = ["poetry-core"]
