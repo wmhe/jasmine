@@ -17,7 +17,15 @@ poetry run python tests.py
 ```
 
 ```bash
-curl -X POST -u [user:password] http://localhost:5001/api/v1/tokens 
+curl -X POST \
+    -u [user:password] \
+    http://localhost:5001/api/v1/tokens 
 
-curl -H "Authorization: bearer [token]" http://localhost:5001/api/v1/users
+curl -H "Authorization: bearer [token]" \
+    http://localhost:5001/api/v1/users
+
+curl -H "Content-Type: application/json" \
+    -X POST \
+    -d '{"title":"meeting","start":"2011-11-04T00:05:23"}' \
+    http://localhost:5001/api/v1/events
 ```

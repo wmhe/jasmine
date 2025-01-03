@@ -1,4 +1,5 @@
 import secrets
+import uuid
 from datetime import datetime, timedelta, timezone
 from typing import Optional
 
@@ -76,3 +77,35 @@ class User(PaginatedAPIMixin, db.Model):
         ) < datetime.now(timezone.utc):
             return None
         return user
+
+
+class Event(PaginatedAPIMixin, db.Model):
+    id: so.Mapped[uuid.UUID] = so.mapped_column(
+        sa.UUID, primary_key=True, default=uuid.uuid4
+    )
+    title: so.Mapped[str] = so.mapped_column(sa.String(64))
+    start: so.Mapped[datetime] = so.mapped_column(sa.DateTime)
+
+    def to_dict(self):
+        data = {
+            "id": self.id,
+            "title": self.title,
+            "start": self.to_jasmine_datetime(self.start),
+        }
+        return data
+
+    def from_dict(self, data):
+        for field in ["title"]:
+            if field in data:
+                setattr(self, field, data[field])
+        for field in ["start"]:
+            if field in data:
+                setattr(self, field, self.from_jasmine_datetime(data[field]))
+
+    @staticmethod
+    def from_jasmine_datetime(datetime_str: str) -> datetime:
+        return datetime.fromisoformat(datetime_str)
+    
+    @staticmethod
+    def to_jasmine_datetime(datetime_obj: datetime) -> str:
+        return datetime_obj.isoformat()
