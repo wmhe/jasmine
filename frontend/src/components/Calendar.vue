@@ -43,7 +43,7 @@ export default {
           },
           create: {
             icon: "bi bi-plus fs-1 text-primary",
-            click: this.openModal,
+            click: this.handleNewEvent,
           },
           search: {
             icon: "bi bi-search fs-1 text-primary",
@@ -89,7 +89,7 @@ export default {
       axios
         .get(path)
         .then((res) => {
-          this.calendarOptions.events = res.data.events;
+          this.calendarOptions.events = res.data.items;
         })
         .catch((error) => {
           console.error(error);
@@ -117,6 +117,9 @@ export default {
     },
     submitForm(data) {
       const path = "http://localhost:5001/api/v1/events";
+      const copy = new Date(data.start);
+      copy.setTime(data.start - copy.getTimezoneOffset()*60*1000) // TODO: This assumes the offset is negative. Fix later.
+      data.start = copy.toISOString()
       axios
         .post(path, data)
         .then(() => {
