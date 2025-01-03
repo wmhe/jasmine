@@ -19,26 +19,16 @@
   </Teleport>
 </template>
 
-<script lang="ts">
-export default {
-  created() {},
-  data() {
-    return {};
-  },
-  props: {},
-  methods: {
-    closeModal() {
-      this.$emit("close");
-    },
-    doAction() {
-      this.$emit("action");
-    },
-  },
-  emits: {
-    close: null,
-    action: null
-  },
-};
+<script setup lang="ts">
+const emit = defineEmits(["close", "action"]);
+
+function closeModal() {
+  emit("close");
+}
+
+function doAction() {
+  emit("action");
+}
 </script>
 
 <style scoped>

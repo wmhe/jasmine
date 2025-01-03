@@ -1,66 +1,3 @@
-<script lang="ts">
-import { NDatePicker, NTimePicker, NInput, NSwitch } from "naive-ui";
-import { defineComponent, type PropType } from "vue";
-
-interface FormData {
-  title: string
-  start: number
-  end: number
-  allDay: boolean
-}
-
-export default defineComponent({
-  created() {},
-  data() {
-    return {
-      title: null,
-      allDay: this.initialFormData.allDay,
-      start: this.initialFormData.start,
-      startTime: this.initialFormData.start,
-      end: this.initialFormData.end,
-      endTime: this.initialFormData.end,
-    };
-  },
-  props: {
-    toggleSubmit: Boolean,
-    initialFormData: {
-      type: Object as PropType<FormData>,
-        required: true
-    },
-  },
-  methods: {
-    submitForm(title: string, start: number, end: number) {
-      if (title && start) {
-        this.$emit("submit", { title, start, end });
-      } else {
-        console.warn("Invalid submit event payload!");
-      }
-    },
-  },
-  components: {
-    NDatePicker,
-    NTimePicker,
-    NInput,
-    NSwitch,
-  },
-  watch: {
-    toggleSubmit() {
-      if (this.title) {
-        this.submitForm(this.title, this.start, this.end)
-      }
-    },
-  },
-  emits: {
-    submit: null,
-  },
-  mounted() {
-    this.$nextTick(() => {
-      (this.$refs.autofocus as InstanceType<typeof HTMLElement>).focus();
-    })
-  },
-})
-</script>
-
 <template>
   <form class="container">
     <div class="row g-0 m-2">
@@ -122,5 +59,55 @@ export default defineComponent({
     </div>
   </form>
 </template>
+
+<script setup lang="ts">
+import { NDatePicker, NInput, NSwitch, NTimePicker } from "naive-ui";
+import { onMounted, ref, useTemplateRef, watch } from "vue";
+
+interface EventFormData {
+  title: string;
+  start: number;
+  end: number;
+  allDay: boolean;
+}
+
+interface Props {
+  toggleSubmit: boolean;
+  initialFormData: EventFormData;
+}
+
+type NInputType = InstanceType<typeof NInput>;
+
+const props = defineProps<Props>();
+
+const emit = defineEmits(["submit"]);
+
+const title = ref<string>();
+const allDay = ref(props.initialFormData.allDay);
+const start = ref(props.initialFormData.start);
+const startTime = ref(props.initialFormData.start);
+const end = ref(props.initialFormData.end);
+const endTime = ref(props.initialFormData.end);
+const inputRef = useTemplateRef<NInputType>("autofocus");
+
+function submitForm(title: string, start: number, end: number) {
+  if (title && start) {
+    emit("submit", { title, start, end });
+  }
+}
+
+watch(
+  () => props.toggleSubmit,
+  () => {
+    if (title.value) {
+      submitForm(title.value, start.value, end.value);
+    }
+  }
+);
+
+onMounted(() => {
+  inputRef.value?.focus();
+});
+</script>
 
 <style scoped></style>

@@ -1,50 +1,3 @@
-<script lang="ts">
-import { defineComponent, type PropType } from "vue";
-import BaseModal from "./BaseModal.vue";
-import CalendarForm from "./CalendarForm.vue";
-
-interface FormData {
-  title: string
-  start: number
-  end: number
-  allDay: boolean
-}
-
-export default defineComponent({
-  created() {},
-  data() {
-    return {
-      submitValue: false,
-    };
-  },
-  props: {
-    initialFormData: {
-      type: Object as PropType<FormData>,
-        required: true
-    },
-  },
-  methods: {
-    closeModal() {
-      this.$emit("close");
-    },
-    toggleSubmit() {
-      this.submitValue = !this.submitValue;
-    },
-    submitForm(data: object) {
-      this.$emit("submit", data);
-    },
-  },
-  components: {
-    BaseModal,
-    CalendarForm,
-  },
-  emits: {
-    close: null,
-    submit: null,
-  },
-})
-</script>
-
 <template>
   <div>
     <BaseModal @close="closeModal" @action="toggleSubmit">
@@ -52,12 +5,47 @@ export default defineComponent({
       <template #content>
         <CalendarForm
           :toggleSubmit="submitValue"
-          :initial-form-data="initialFormData"
+          :initial-form-data="props.initialFormData"
           @submit="submitForm"
         ></CalendarForm>
       </template>
     </BaseModal>
   </div>
 </template>
+
+<script setup lang="ts">
+import { ref } from "vue";
+import BaseModal from "./BaseModal.vue";
+import CalendarForm from "./CalendarForm.vue";
+
+interface EventFormData {
+  title: string;
+  start: number;
+  end: number;
+  allDay: boolean;
+}
+
+interface Props {
+  initialFormData: EventFormData;
+}
+
+const props = defineProps<Props>();
+
+const emit = defineEmits(["close", "submit"]);
+
+const submitValue = ref(false);
+
+function closeModal() {
+  emit("close");
+}
+
+function toggleSubmit() {
+  submitValue.value = !submitValue.value;
+}
+
+function submitForm(data: EventFormData) {
+  emit("submit", data);
+}
+</script>
 
 <style scoped></style>
