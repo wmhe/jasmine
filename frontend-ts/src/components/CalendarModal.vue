@@ -1,15 +1,16 @@
 <template>
   <div>
-    <BaseModal @close="closeModal" @action="toggleSubmit">
+    <base-modal @close="closeModal" @action="toggleSubmit">
       <template #title> New Event </template>
       <template #content>
-        <CalendarForm
+        <calendar-form
           :toggleSubmit="submitValue"
           :initial-form-data="props.initialFormData"
-          @submit="submitForm"
-        ></CalendarForm>
+          @add-event="(data) => addEvent(data)"
+        >
+        </calendar-form>
       </template>
-    </BaseModal>
+    </base-modal>
   </div>
 </template>
 
@@ -17,21 +18,20 @@
 import { ref } from "vue";
 import BaseModal from "./BaseModal.vue";
 import CalendarForm from "./CalendarForm.vue";
-
-interface EventFormData {
-  title: string;
-  start: number;
-  end: number;
-  allDay: boolean;
-}
+import type { Event } from "@/services/api";
 
 interface Props {
-  initialFormData: EventFormData;
+  initialFormData: Event;
+}
+
+interface Emits {
+  close: [];
+  submit: [event: Event];
 }
 
 const props = defineProps<Props>();
 
-const emit = defineEmits(["close", "submit"]);
+const emit = defineEmits<Emits>();
 
 const submitValue = ref(false);
 
@@ -43,8 +43,8 @@ function toggleSubmit() {
   submitValue.value = !submitValue.value;
 }
 
-function submitForm(data: EventFormData) {
-  emit("submit", data);
+function addEvent(event: Event) {
+  emit("submit", event);
 }
 </script>
 

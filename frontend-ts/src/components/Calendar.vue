@@ -10,10 +10,10 @@
   </div>
   <div>
     <calendar-modal
-      :initial-form-data="formData"
       v-if="isModalOpen"
-      @close="isModalOpen = false"
-      @submit="submitForm"
+      :initial-form-data="formData"
+      @close="() => (isModalOpen = false)"
+      @submit="(data) => submitForm(data)"
     ></calendar-modal>
   </div>
 </template>
@@ -25,6 +25,7 @@ import FullCalendar from "@fullcalendar/vue3";
 import axios from "axios";
 import { onMounted, ref, useTemplateRef } from "vue";
 import CalendarModal from "./CalendarModal.vue";
+import type { Event } from "@/services/api";
 
 type FullCalendarType = InstanceType<typeof FullCalendar>;
 
@@ -83,7 +84,7 @@ function getEvents() {
 }
 
 onMounted(() => {
-  getEvents()
+  getEvents();
   calendarRef.value?.$el.addEventListener(
     "touchstart",
     (e: { changedTouches: { screenX: number }[] }) => {
@@ -121,7 +122,7 @@ function handleDateClick(info: { date: Date }) {
   }
 }
 
-function submitForm(data: { start: number }) {
+function submitForm(data: Event) {
   const path = "http://localhost:5001/api/v1/events";
   const copy = new Date(data.start);
   copy.setTime(data.start - copy.getTimezoneOffset() * 60 * 1000); // TODO: This assumes the offset is negative. Fix later.

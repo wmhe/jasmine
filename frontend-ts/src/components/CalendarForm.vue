@@ -21,9 +21,9 @@
       </div>
       <div class="col-4" v-if="!allDay">
         <n-time-picker
-          use-12-hours
           v-model:value="startTime"
           format="h:mm a"
+          use-12-hours
           :default-value="startTime"
         ></n-time-picker>
       </div>
@@ -39,9 +39,9 @@
       </div>
       <div class="col-4" v-if="!allDay">
         <n-time-picker
-          use-12-hours
           v-model:value="endTime"
           format="h:mm a"
+          use-12-hours
           :default-value="endTime"
         ></n-time-picker>
       </div>
@@ -61,26 +61,24 @@
 </template>
 
 <script setup lang="ts">
+import type { Event } from "@/services/api";
 import { NDatePicker, NInput, NSwitch, NTimePicker } from "naive-ui";
 import { onMounted, ref, useTemplateRef, watch } from "vue";
 
-interface EventFormData {
-  title: string;
-  start: number;
-  end: number;
-  allDay: boolean;
-}
-
 interface Props {
   toggleSubmit: boolean;
-  initialFormData: EventFormData;
+  initialFormData: Event;
+}
+
+interface Emits {
+  addEvent: [event: Event];
 }
 
 type NInputType = InstanceType<typeof NInput>;
 
 const props = defineProps<Props>();
 
-const emit = defineEmits(["submit"]);
+const emit = defineEmits<Emits>();
 
 const title = ref<string>();
 const allDay = ref(props.initialFormData.allDay);
@@ -90,9 +88,14 @@ const end = ref(props.initialFormData.end);
 const endTime = ref(props.initialFormData.end);
 const inputRef = useTemplateRef<NInputType>("autofocus");
 
-function submitForm(title: string, start: number, end: number) {
+async function addEvent(title: string, start: number, end: number) {
   if (title && start) {
-    emit("submit", { title, start, end });
+    emit("addEvent", {
+      title,
+      start,
+      end,
+      allDay: false,
+    });
   }
 }
 
@@ -100,7 +103,7 @@ watch(
   () => props.toggleSubmit,
   () => {
     if (title.value) {
-      submitForm(title.value, start.value, end.value);
+      addEvent(title.value, start.value, end.value);
     }
   }
 );

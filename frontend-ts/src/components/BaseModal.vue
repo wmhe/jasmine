@@ -20,7 +20,12 @@
 </template>
 
 <script setup lang="ts">
-const emit = defineEmits(["close", "action"]);
+interface Emits {
+  close: [];
+  action: [];
+}
+
+const emit = defineEmits<Emits>();
 
 function closeModal() {
   emit("close");
