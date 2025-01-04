@@ -8,7 +8,7 @@ export interface CreateEvent {
 }
 
 
-export interface Event {
+export interface CalendarEvent {
   id: string;
   title: string;
   start: number;
@@ -17,7 +17,7 @@ export interface Event {
 }
 
 interface GetEvents {
-  items: Event[]
+  items: CalendarEvent[]
 }
 
 interface DeleteEvent {
@@ -31,19 +31,19 @@ export class EventService {
     );
     return data;
   }
-  async createEvent(event: CreateEvent): Promise<Event> {
+  async createEvent(event: CreateEvent): Promise<CalendarEvent> {
     const copy = new Date(event.start);
     copy.setTime(event.start - copy.getTimezoneOffset() * 60 * 1000); // TODO: This assumes the offset is negative. Fix later.
     // @ts-expect-error type cast to string
     event.start = copy.toISOString();
-    const { data } = await axios.post<Event>(
+    const { data } = await axios.post<CalendarEvent>(
       "http://localhost:5001/api/v1/events",
       event
     );
     return data;
   }
-  async updateEvent(event: Event): Promise<Event> {
-    const { data } = await axios.put<Event>(
+  async updateEvent(event: CalendarEvent): Promise<CalendarEvent> {
+    const { data } = await axios.put<CalendarEvent>(
       `http://localhost:5001/api/v1/events/${event.id}`,
       event
     );

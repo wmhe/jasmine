@@ -61,7 +61,8 @@
 </template>
 
 <script setup lang="ts">
-import type { CreateEvent } from "@/services/api";
+import { eventService } from "@/services";
+import type { CreateEvent, CalendarEvent } from "@/services/api";
 import { NDatePicker, NInput, NSwitch, NTimePicker } from "naive-ui";
 import { onMounted, ref, useTemplateRef, watch } from "vue";
 
@@ -71,7 +72,7 @@ interface Props {
 }
 
 interface Emits {
-  createEvent: [event: CreateEvent];
+  createEvent: [event: CalendarEvent];
 }
 
 type NInputType = InstanceType<typeof NInput>;
@@ -88,26 +89,19 @@ const end = ref(props.initialFormData.end);
 const endTime = ref(props.initialFormData.end);
 const inputRef = useTemplateRef<NInputType>("autofocus");
 
-// TODO: replace emit callback chain with use of api class.
-async function createEvent(title: string, start: number, end: number) {
-  if (title && start) {
-    emit("createEvent", {
-      title,
-      start,
-      end,
-      allDay: false,
+async function submitEvent() {
+  if (title.value && start.value) {
+    const newEvent = await eventService.createEvent({
+      title: title.value,
+      start: start.value,
+      allDay: allDay.value,
+      end: end.value,
     });
+    emit("createEvent", newEvent);
   }
 }
 
-watch(
-  () => props.toggleSubmit,
-  () => {
-    if (title.value) {
-      createEvent(title.value, start.value, end.value);
-    }
-  }
-);
+watch(() => props.toggleSubmit, submitEvent, { immediate: true });
 
 onMounted(() => {
   inputRef.value?.focus();

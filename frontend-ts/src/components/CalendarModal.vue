@@ -4,9 +4,9 @@
       <template #title> New Event </template>
       <template #content>
         <calendar-form
-          :toggleSubmit="submitValue"
+          :toggle-submit="submitValue"
           :initial-form-data="props.initialFormData"
-          @create-event="(data) => createEvent(data)"
+          @create-event="handleCreateEvent"
         >
         </calendar-form>
       </template>
@@ -18,7 +18,7 @@
 import { ref } from "vue";
 import BaseModal from "./BaseModal.vue";
 import CalendarForm from "./CalendarForm.vue";
-import type { CreateEvent } from "@/services/api";
+import type { CreateEvent, CalendarEvent } from "@/services/api";
 
 interface Props {
   initialFormData: CreateEvent;
@@ -26,7 +26,7 @@ interface Props {
 
 interface Emits {
   close: [];
-  submit: [event: CreateEvent];
+  createEvent: [event: CalendarEvent];
 }
 
 const props = defineProps<Props>();
@@ -44,8 +44,8 @@ function toggleSubmit() {
   submitValue.value = !submitValue.value;
 }
 
-function createEvent(event: CreateEvent) {
-  emit("submit", event);
+function handleCreateEvent(event: CalendarEvent) {
+  emit("createEvent", event);
 }
 </script>
 

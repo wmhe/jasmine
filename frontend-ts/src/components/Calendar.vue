@@ -13,7 +13,7 @@
       v-if="isModalOpen"
       :initial-form-data="formData"
       @close="() => (isModalOpen = false)"
-      @submit="(data) => submitForm(data)"
+      @create-event="handleCreateEvent"
     ></calendar-modal>
   </div>
 </template>
@@ -24,7 +24,7 @@ import interactionPlugin from "@fullcalendar/interaction";
 import FullCalendar from "@fullcalendar/vue3";
 import { ref, useTemplateRef } from "vue";
 import CalendarModal from "./CalendarModal.vue";
-import type { CreateEvent, Event } from "@/services/api";
+import type { CalendarEvent } from "@/services/api";
 import { usePointerSwipe } from "@vueuse/core";
 import { eventService } from "@/services";
 
@@ -62,7 +62,7 @@ const calendarOptions = ref({
   },
   themeSystem: "bootstrap5",
   dateClick: handleDateClick,
-  events: <Event[]>[],
+  events: <CalendarEvent[]>[],
 });
 
 const isModalOpen = ref(false);
@@ -95,16 +95,9 @@ function handleDateClick(info: { date: Date }) {
   }
 }
 
-async function submitForm(data: CreateEvent) {
-  await eventService
-    .createEvent(data)
-    .then((event) => {
-      calendarOptions.value.events.push(event);
-      isModalOpen.value = false;
-    })
-    .catch((error) => {
-      console.log(error);
-    });
+function handleCreateEvent(event: CalendarEvent) {
+  isModalOpen.value = false;
+  calendarOptions.value.events.push(event);
 }
 
 function calculateFormDataNow() {
