@@ -1,6 +1,6 @@
 <!-- eslint-disable vue/multi-word-component-names -->
 <template>
-  <div class="container-fluid h-100 p-0">
+  <div class="container-fluid h-100 p-0" ref="target">
     <div class="row h-100">
       <div class="d-flex h-100">
         <!-- @vue-expect-error options undefined-->
@@ -22,10 +22,11 @@
 import dayGridPlugin from "@fullcalendar/daygrid";
 import interactionPlugin from "@fullcalendar/interaction";
 import FullCalendar from "@fullcalendar/vue3";
-import axios from "axios";
-import { onMounted, ref, useTemplateRef } from "vue";
+import { ref, useTemplateRef } from "vue";
 import CalendarModal from "./CalendarModal.vue";
-import type { Event } from "@/services/api";
+import type { CreateEvent, Event } from "@/services/api";
+import { usePointerSwipe } from "@vueuse/core";
+import { eventService } from "@/services";
 
 type FullCalendarType = InstanceType<typeof FullCalendar>;
 
@@ -61,53 +62,25 @@ const calendarOptions = ref({
   },
   themeSystem: "bootstrap5",
   dateClick: handleDateClick,
-  events: [],
+  events: <Event[]>[],
 });
 
-const touchstartX = ref(0);
-const touchendX = ref(0);
 const isModalOpen = ref(false);
 const pointerdownTimestamp = ref(Date.now());
 const formData = ref(calculateFormDataNow());
 const calendarRef = useTemplateRef<FullCalendarType>("fullCalendar");
 
-function getEvents() {
-  const path = "http://localhost:5001/api/v1/events";
-  axios
-    .get(path)
-    .then((res) => {
-      calendarOptions.value.events = res.data.items;
-    })
-    .catch((error) => {
-      console.error(error);
-    });
-}
+const target = ref<HTMLElement | null>(null);
 
-onMounted(() => {
-  getEvents();
-  calendarRef.value?.$el.addEventListener(
-    "touchstart",
-    (e: { changedTouches: { screenX: number }[] }) => {
-      touchstartX.value = e.changedTouches[0].screenX;
+usePointerSwipe(target, {
+  onSwipeEnd(e, direction) {
+    if (direction == "left") {
+      calendarRef.value?.getApi().next();
+    } else if (direction == "right") {
+      calendarRef.value?.getApi().prev();
     }
-  );
-  calendarRef.value?.$el.addEventListener(
-    "touchend",
-    (e: { changedTouches: { screenX: number }[] }) => {
-      touchendX.value = e.changedTouches[0].screenX;
-      checkDirection();
-    }
-  );
+  },
 });
-
-function checkDirection() {
-  if (touchendX.value < touchstartX.value) {
-    calendarRef.value?.getApi().next();
-  }
-  if (touchendX.value > touchstartX.value) {
-    calendarRef.value?.getApi().prev();
-  }
-}
 
 function handleNewEvent() {
   formData.value = calculateFormDataNow();
@@ -122,20 +95,15 @@ function handleDateClick(info: { date: Date }) {
   }
 }
 
-function submitForm(data: Event) {
-  const path = "http://localhost:5001/api/v1/events";
-  const copy = new Date(data.start);
-  copy.setTime(data.start - copy.getTimezoneOffset() * 60 * 1000); // TODO: This assumes the offset is negative. Fix later.
-  // @ts-expect-error type cast to string
-  data.start = copy.toISOString();
-  axios
-    .post(path, data)
-    .then(() => {
-      getEvents();
+async function submitForm(data: CreateEvent) {
+  await eventService
+    .createEvent(data)
+    .then((event) => {
+      calendarOptions.value.events.push(event);
       isModalOpen.value = false;
     })
     .catch((error) => {
-      console.error(error);
+      console.log(error);
     });
 }
 
@@ -160,6 +128,8 @@ function calculateFormDataForDate(date: Date) {
     end: date.getTime(),
   };
 }
+
+calendarOptions.value.events = await eventService.getEvents().then((res) => res.items);
 </script>
 
 <style scoped></style>

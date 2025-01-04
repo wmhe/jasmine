@@ -3,5 +3,8 @@ import Calendar from "../components/Calendar.vue";
 </script>
 
 <template>
-  <Calendar />
+  <Suspense>
+    <Calendar />
+    <template #fallback> Loading... </template>
+  </Suspense>
 </template>

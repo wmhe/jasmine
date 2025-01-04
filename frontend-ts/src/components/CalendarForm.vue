@@ -61,17 +61,17 @@
 </template>
 
 <script setup lang="ts">
-import type { Event } from "@/services/api";
+import type { CreateEvent } from "@/services/api";
 import { NDatePicker, NInput, NSwitch, NTimePicker } from "naive-ui";
 import { onMounted, ref, useTemplateRef, watch } from "vue";
 
 interface Props {
   toggleSubmit: boolean;
-  initialFormData: Event;
+  initialFormData: CreateEvent;
 }
 
 interface Emits {
-  addEvent: [event: Event];
+  createEvent: [event: CreateEvent];
 }
 
 type NInputType = InstanceType<typeof NInput>;
@@ -88,9 +88,10 @@ const end = ref(props.initialFormData.end);
 const endTime = ref(props.initialFormData.end);
 const inputRef = useTemplateRef<NInputType>("autofocus");
 
-async function addEvent(title: string, start: number, end: number) {
+// TODO: replace emit callback chain with use of api class.
+async function createEvent(title: string, start: number, end: number) {
   if (title && start) {
-    emit("addEvent", {
+    emit("createEvent", {
       title,
       start,
       end,
@@ -103,7 +104,7 @@ watch(
   () => props.toggleSubmit,
   () => {
     if (title.value) {
-      addEvent(title.value, start.value, end.value);
+      createEvent(title.value, start.value, end.value);
     }
   }
 );

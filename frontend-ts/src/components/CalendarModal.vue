@@ -6,7 +6,7 @@
         <calendar-form
           :toggleSubmit="submitValue"
           :initial-form-data="props.initialFormData"
-          @add-event="(data) => addEvent(data)"
+          @create-event="(data) => createEvent(data)"
         >
         </calendar-form>
       </template>
@@ -18,15 +18,15 @@
 import { ref } from "vue";
 import BaseModal from "./BaseModal.vue";
 import CalendarForm from "./CalendarForm.vue";
-import type { Event } from "@/services/api";
+import type { CreateEvent } from "@/services/api";
 
 interface Props {
-  initialFormData: Event;
+  initialFormData: CreateEvent;
 }
 
 interface Emits {
   close: [];
-  submit: [event: Event];
+  submit: [event: CreateEvent];
 }
 
 const props = defineProps<Props>();
@@ -39,11 +39,12 @@ function closeModal() {
   emit("close");
 }
 
+// TODO: This can probably be done in a more concise way.
 function toggleSubmit() {
   submitValue.value = !submitValue.value;
 }
 
-function addEvent(event: Event) {
+function createEvent(event: CreateEvent) {
   emit("submit", event);
 }
 </script>
