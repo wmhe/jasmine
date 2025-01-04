@@ -1,63 +1,56 @@
 <template>
-  <form class="container">
+  <div class="container">
     <div class="row g-0 m-2">
-      <div class="col-12">
-        <n-input v-model:value="title" type="text" placeholder="Title" ref="autofocus" />
-        <n-input type="text" placeholder="Location or Video Call" />
-      </div>
+      <NInput
+        v-model:value="title"
+        type="text"
+        placeholder="Title"
+        ref="autofocus"
+        class="col-12"
+      />
+      <NInput type="text" placeholder="Location or Video Call" class="col-12" />
     </div>
     <div class="row g-0 m-2">
       <div class="col-10">All-day</div>
-      <div class="col-2"><n-switch v-model:value="allDay" :default-value="allDay" /></div>
+      <NSwitch v-model:value="allDay" :default-value="allDay" class="col-2" />
     </div>
     <div class="row g-0 m-2 justify-content-between">
       <div class="col-4">Starts</div>
-      <div class="col-4">
-        <n-date-picker
-          v-model:value="start"
-          type="date"
-          :default-value="start"
-        ></n-date-picker>
-      </div>
-      <div class="col-4" v-if="!allDay">
-        <n-time-picker
-          v-model:value="startTime"
-          format="h:mm a"
-          use-12-hours
-          :default-value="startTime"
-        ></n-time-picker>
-      </div>
+      <NDatePicker
+        v-model:value="start"
+        type="date"
+        :default-value="start"
+        class="col-4"
+      />
+      <NTimePicker
+        v-if="!allDay"
+        v-model:value="startTime"
+        format="h:mm a"
+        use-12-hours
+        :default-value="startTime"
+        class="col-4"
+      />
     </div>
     <div class="row g-0 m-2 justify-content-between">
       <div class="col-4">Ends</div>
-      <div class="col-4">
-        <n-date-picker
-          v-model:value="end"
-          type="date"
-          :default-value="end"
-        ></n-date-picker>
-      </div>
-      <div class="col-4" v-if="!allDay">
-        <n-time-picker
-          v-model:value="endTime"
-          format="h:mm a"
-          use-12-hours
-          :default-value="endTime"
-        ></n-time-picker>
-      </div>
+      <NDatePicker v-model:value="end" type="date" :default-value="end" class="col-4" />
+      <NTimePicker
+        v-if="!allDay"
+        v-model:value="endTime"
+        format="h:mm a"
+        use-12-hours
+        :default-value="endTime"
+        class="col-4"
+      />
     </div>
     <div class="row g-0 m-2">
       <div class="col-10">Repeat</div>
-      <div class="col-2">
-        <n-switch />
-      </div>
+      <NSwitch class="col-2" />
     </div>
     <div class="row g-0 m-2">
-      <div class="col-12">
-        <n-input type="textarea" placeholder="Notes" />
-      </div>
+      <NInput type="textarea" placeholder="Notes" class="col-12" />
     </div>
-  </form>
+  </div>
 </template>
 
 <script setup lang="ts">

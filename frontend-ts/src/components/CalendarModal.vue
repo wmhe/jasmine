@@ -1,16 +1,15 @@
 <template>
   <div>
-    <base-modal @close="closeModal" @action="toggleSubmit">
+    <BaseModal @close="closeModal" @action="toggleSubmit">
       <template #title> New Event </template>
       <template #content>
-        <calendar-form
+        <CalendarForm
           :toggle-submit="submitValue"
           :initial-form-data="props.initialFormData"
           @create-event="handleCreateEvent"
-        >
-        </calendar-form>
+        />
       </template>
-    </base-modal>
+    </BaseModal>
   </div>
 </template>
 

@@ -2,20 +2,16 @@
 <template>
   <div class="container-fluid h-100 p-0" ref="target">
     <div class="row h-100">
-      <div class="d-flex h-100">
-        <!-- @vue-expect-error options undefined-->
-        <full-calendar ref="fullCalendar" :options="calendarOptions"></full-calendar>
-      </div>
+      <!-- @vue-expect-error options undefined-->
+      <FullCalendar ref="fullCalendar" :options="calendarOptions" class="d-flex h-100" />
     </div>
   </div>
-  <div>
-    <calendar-modal
-      v-if="isModalOpen"
-      :initial-form-data="formData"
-      @close="() => (isModalOpen = false)"
-      @create-event="handleCreateEvent"
-    ></calendar-modal>
-  </div>
+  <CalendarModal
+    v-if="isModalOpen"
+    :initial-form-data="formData"
+    @close="() => (isModalOpen = false)"
+    @create-event="handleCreateEvent"
+  />
 </template>
 
 <script setup lang="ts">
