@@ -1,8 +1,7 @@
 <!-- eslint-disable vue/multi-word-component-names -->
 <template>
-  <div class="container-fluid h-100 p-0" ref="target">
+  <div class="container-fluid h-100 p-0">
     <div class="row h-100">
-      <!-- @vue-expect-error options undefined-->
       <FullCalendar ref="fullCalendar" :options="calendarOptions" class="d-flex h-100" />
     </div>
   </div>
@@ -15,20 +14,29 @@
 </template>
 
 <script setup lang="ts">
+import { eventService } from "@/services";
+import type { CalendarEvent } from "@/services/api";
+import type {
+  CalendarOptions,
+  DateSelectArg,
+  EventApi,
+  EventClickArg,
+} from "@fullcalendar/core";
 import dayGridPlugin from "@fullcalendar/daygrid";
+import type { DateClickArg } from "@fullcalendar/interaction";
 import interactionPlugin from "@fullcalendar/interaction";
 import FullCalendar from "@fullcalendar/vue3";
+import { usePointerSwipe } from "@vueuse/core";
 import { ref, useTemplateRef } from "vue";
 import CalendarModal from "./CalendarModal.vue";
-import type { CalendarEvent } from "@/services/api";
-import { usePointerSwipe } from "@vueuse/core";
-import { eventService } from "@/services";
 
-type FullCalendarType = InstanceType<typeof FullCalendar>;
-
-const calendarOptions = ref({
+const calendarOptions = ref<CalendarOptions>({
   plugins: [dayGridPlugin, interactionPlugin],
   initialView: "dayGridMonth",
+  initialEvents: await eventService.getEvents().then((res) => res.items),
+  editable: true,
+  selectable: false, // TODO: implement selection for desktop only
+  weekends: true,
   weekNumbers: true,
   customButtons: {
     menu: {
@@ -58,22 +66,26 @@ const calendarOptions = ref({
   },
   themeSystem: "bootstrap5",
   dateClick: handleDateClick,
-  events: <CalendarEvent[]>[],
+  select: handleDateSelect,
+  eventClick: handleEventClick,
+  eventsSet: handleEvents,
 });
+const currentEvents = ref<EventApi[]>([] as EventApi[]);
 
 const isModalOpen = ref(false);
 const pointerdownTimestamp = ref(Date.now());
 const formData = ref(calculateFormDataNow());
-const calendarRef = useTemplateRef<FullCalendarType>("fullCalendar");
+const calendarRef = useTemplateRef<InstanceType<typeof FullCalendar> & HTMLElement>(
+  "fullCalendar"
+);
 
-const target = ref<HTMLElement | null>(null);
-
-usePointerSwipe(target, {
+usePointerSwipe(calendarRef, {
   onSwipeEnd(e, direction) {
+    const calendarApi = calendarRef.value!.getApi();
     if (direction == "left") {
-      calendarRef.value?.getApi().next();
+      calendarApi.next();
     } else if (direction == "right") {
-      calendarRef.value?.getApi().prev();
+      calendarApi.prev();
     }
   },
 });
@@ -83,17 +95,32 @@ function handleNewEvent() {
   isModalOpen.value = true;
 }
 
-function handleDateClick(info: { date: Date }) {
+function handleDateClick(clickInfo: DateClickArg) {
   const offset = Date.now() - pointerdownTimestamp.value;
   if (offset > 5000) {
-    formData.value = calculateFormDataForDate(info.date);
+    formData.value = calculateFormDataForDate(clickInfo.date);
     isModalOpen.value = true;
   }
 }
 
+function handleEventClick(clickInfo: EventClickArg) {
+  console.log(`Clicked on ${clickInfo.event.title}`);
+}
+
+function handleEvents(events: EventApi[]) {
+  currentEvents.value = events;
+}
+
+function handleDateSelect(selectInfo: DateSelectArg) {
+  const calendarApi = calendarRef.value!.getApi();
+  calendarApi.unselect();
+  console.log(`Selected ${selectInfo.startStr} to ${selectInfo.endStr}`);
+}
+
 function handleCreateEvent(event: CalendarEvent) {
   isModalOpen.value = false;
-  calendarOptions.value.events.push(event);
+  const calendarApi = calendarRef.value!.getApi();
+  calendarApi.addEvent(event);
 }
 
 function calculateFormDataNow() {
@@ -117,8 +144,6 @@ function calculateFormDataForDate(date: Date) {
     end: date.getTime(),
   };
 }
-
-calendarOptions.value.events = await eventService.getEvents().then((res) => res.items);
 </script>
 
 <style scoped></style>
