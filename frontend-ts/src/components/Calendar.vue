@@ -1,24 +1,14 @@
 <!-- eslint-disable vue/multi-word-component-names -->
 <template>
-  <div class="container-fluid h-100 p-0">
-    <div class="row h-100">
-      <FullCalendar ref="fullCalendar" :options="calendarOptions" class="d-flex h-100" />
-    </div>
-  </div>
-  <CalendarModal
-    v-if="isModalOpen"
-    :initial-form-data="formData"
-    @close="() => (isModalOpen = false)"
-    @create-event="handleCreateEvent"
-  />
+  <FullCalendar ref="fullCalendar" :options="calendarOptions" />
 </template>
 
 <script setup lang="ts">
-import { eventService } from "@/services";
 import type { CalendarEvent } from "@/services/api";
 import type {
   CalendarOptions,
   DateSelectArg,
+  DatesSetArg,
   EventApi,
   EventClickArg,
 } from "@fullcalendar/core";
@@ -27,37 +17,26 @@ import type { DateClickArg } from "@fullcalendar/interaction";
 import interactionPlugin from "@fullcalendar/interaction";
 import FullCalendar from "@fullcalendar/vue3";
 import { usePointerSwipe } from "@vueuse/core";
-import { ref, useTemplateRef } from "vue";
-import CalendarModal from "./CalendarModal.vue";
+import { ref, useTemplateRef, watchEffect } from "vue";
+
+interface Props {
+  events: CalendarEvent[];
+}
+interface Emits {
+  change: [title: string];
+  openCreateEventModalAtDate: [date: Date];
+}
+const props = defineProps<Props>();
+const emit = defineEmits<Emits>();
 
 const calendarOptions = ref<CalendarOptions>({
   plugins: [dayGridPlugin, interactionPlugin],
   initialView: "dayGridMonth",
-  initialEvents: await eventService.getEvents().then((res) => res.items),
-  editable: true,
+  editable: false, // TODO: implement dragabble events for desktop only
   selectable: false, // TODO: implement selection for desktop only
   weekends: true,
   weekNumbers: true,
-  customButtons: {
-    menu: {
-      icon: "bi bi-list fs-1 text-primary",
-    },
-    create: {
-      icon: "bi bi-plus fs-1 text-primary",
-      click: handleNewEvent,
-    },
-    search: {
-      icon: "bi bi-search fs-1 text-primary",
-    },
-    customToday: {
-      icon: "bi bi-0-circle fs-1 text-primary",
-    },
-  },
-  headerToolbar: {
-    start: "menu title",
-    center: "",
-    end: "customToday search create",
-  },
+  headerToolbar: false,
   titleFormat: {
     month: "short",
   },
@@ -69,12 +48,9 @@ const calendarOptions = ref<CalendarOptions>({
   select: handleDateSelect,
   eventClick: handleEventClick,
   eventsSet: handleEvents,
+  datesSet: handleDates,
 });
-const currentEvents = ref<EventApi[]>([] as EventApi[]);
-
-const isModalOpen = ref(false);
 const pointerdownTimestamp = ref(Date.now());
-const formData = ref(calculateFormDataNow());
 const calendarRef = useTemplateRef<InstanceType<typeof FullCalendar> & HTMLElement>(
   "fullCalendar"
 );
@@ -90,16 +66,10 @@ usePointerSwipe(calendarRef, {
   },
 });
 
-function handleNewEvent() {
-  formData.value = calculateFormDataNow();
-  isModalOpen.value = true;
-}
-
 function handleDateClick(clickInfo: DateClickArg) {
   const offset = Date.now() - pointerdownTimestamp.value;
   if (offset > 5000) {
-    formData.value = calculateFormDataForDate(clickInfo.date);
-    isModalOpen.value = true;
+    emit("openCreateEventModalAtDate", clickInfo.date);
   }
 }
 
@@ -107,8 +77,9 @@ function handleEventClick(clickInfo: EventClickArg) {
   console.log(`Clicked on ${clickInfo.event.title}`);
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function handleEvents(events: EventApi[]) {
-  currentEvents.value = events;
+  console.log("Events updated");
 }
 
 function handleDateSelect(selectInfo: DateSelectArg) {
@@ -117,33 +88,15 @@ function handleDateSelect(selectInfo: DateSelectArg) {
   console.log(`Selected ${selectInfo.startStr} to ${selectInfo.endStr}`);
 }
 
-function handleCreateEvent(event: CalendarEvent) {
-  isModalOpen.value = false;
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+function handleDates(datesSet: DatesSetArg) {
   const calendarApi = calendarRef.value!.getApi();
-  calendarApi.addEvent(event);
+  emit("change", calendarApi.getCurrentData().viewTitle);
 }
 
-function calculateFormDataNow() {
-  const nextHour = new Date();
-  nextHour.setHours(nextHour.getHours() + 1, 0, 0, 0);
-  const nextNextHour = new Date();
-  nextNextHour.setHours(nextNextHour.getHours() + 2, 0, 0, 0);
-  return {
-    title: "",
-    allDay: false,
-    start: nextHour.getTime(),
-    end: nextNextHour.getTime(),
-  };
-}
-
-function calculateFormDataForDate(date: Date) {
-  return {
-    title: "",
-    allDay: true,
-    start: date.getTime(),
-    end: date.getTime(),
-  };
-}
+watchEffect(() => {
+  calendarOptions.value.events = props.events;
+});
 </script>
 
 <style scoped></style>
